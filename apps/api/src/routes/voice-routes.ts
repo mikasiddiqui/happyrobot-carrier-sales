@@ -11,9 +11,7 @@ import { requirePublicApiAuth } from '../middleware/public-auth'
 
 export const voiceRoutes = Router()
 
-voiceRoutes.use(requirePublicApiAuth)
-
-voiceRoutes.post('/voice/token', async (request, response) => {
+voiceRoutes.post('/voice/token', requirePublicApiAuth, async (request, response) => {
   if (!isHappyRobotConfigured() || !happyRobotClient) {
     response.status(503).json({
       error:
