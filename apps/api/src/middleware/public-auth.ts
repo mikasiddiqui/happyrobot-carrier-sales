@@ -10,10 +10,10 @@ function readPublicToken(request: Request): string {
   const authorization = request.header('authorization')
 
   if (authorization?.startsWith('Bearer ')) {
-    return authorization.slice('Bearer '.length)
+    return authorization.slice('Bearer '.length).trim()
   }
 
-  return request.header('x-api-key') ?? ''
+  return (request.header('x-api-key') ?? '').trim()
 }
 
 export function requirePublicApiAuth(

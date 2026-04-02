@@ -15,16 +15,17 @@ declare global {
 }
 
 function fromWindow(key: keyof NonNullable<Window['__APP_CONFIG__']>): string {
-  return window.__APP_CONFIG__?.[key] ?? ''
+  return (window.__APP_CONFIG__?.[key] ?? '').trim()
 }
 
 export const runtimeConfig: RuntimeConfig = {
-  apiBaseUrl: fromWindow('VITE_API_BASE_URL') || import.meta.env.VITE_API_BASE_URL || '',
+  apiBaseUrl:
+    fromWindow('VITE_API_BASE_URL') || (import.meta.env.VITE_API_BASE_URL ?? '').trim(),
   apiPublicKey:
-    fromWindow('VITE_API_PUBLIC_KEY') || import.meta.env.VITE_API_PUBLIC_KEY || '',
+    fromWindow('VITE_API_PUBLIC_KEY') ||
+    (import.meta.env.VITE_API_PUBLIC_KEY ?? '').trim(),
   happyRobotDeploymentUrl:
     fromWindow('VITE_HAPPYROBOT_DEPLOYMENT_URL') ||
-    import.meta.env.VITE_HAPPYROBOT_DEPLOYMENT_URL ||
+    (import.meta.env.VITE_HAPPYROBOT_DEPLOYMENT_URL ?? '').trim() ||
     '',
 }
-

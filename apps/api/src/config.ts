@@ -6,12 +6,13 @@ import type { AppEnvironment } from './types'
 dotenv.config()
 
 const port = Number(process.env.PORT ?? 3001)
-const happyRobotApiKey = process.env.HAPPYROBOT_API_KEY ?? ''
-const happyRobotWorkflowId = process.env.HAPPYROBOT_WORKFLOW_ID ?? ''
-const happyRobotEnv = (process.env.HAPPYROBOT_ENV ?? 'development') as AppEnvironment
-const fmcsaApiKey = process.env.FMCSA_API_KEY ?? ''
-const internalApiKey = process.env.API_INTERNAL_KEY ?? ''
-const publicApiKey = process.env.API_PUBLIC_KEY ?? ''
+const happyRobotApiKey = (process.env.HAPPYROBOT_API_KEY ?? '').trim()
+const happyRobotWorkflowId = (process.env.HAPPYROBOT_WORKFLOW_ID ?? '').trim()
+const happyRobotEnv = ((process.env.HAPPYROBOT_ENV ?? 'development').trim() ||
+  'development') as AppEnvironment
+const fmcsaApiKey = (process.env.FMCSA_API_KEY ?? '').trim()
+const internalApiKey = (process.env.API_INTERNAL_KEY ?? '').trim()
+const publicApiKey = (process.env.API_PUBLIC_KEY ?? '').trim()
 const corsAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? '')
   .split(',')
   .map((origin) => origin.trim())
