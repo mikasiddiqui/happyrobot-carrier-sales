@@ -13,9 +13,7 @@ import { formatLane } from '../services/load-search'
 
 export const publicRoutes = Router()
 
-publicRoutes.use(requirePublicApiAuth)
-
-publicRoutes.get('/health', async (_request, response) => {
+publicRoutes.get('/health', requirePublicApiAuth, async (_request, response) => {
   const [loads, carriers, calls] = await Promise.all([
     getLoads(),
     getCarriers(),
@@ -44,7 +42,7 @@ publicRoutes.get('/health', async (_request, response) => {
   })
 })
 
-publicRoutes.get('/loads', async (_request, response) => {
+publicRoutes.get('/loads', requirePublicApiAuth, async (_request, response) => {
   const loads = await getLoads()
 
   response.json({
@@ -57,7 +55,7 @@ publicRoutes.get('/loads', async (_request, response) => {
   })
 })
 
-publicRoutes.get('/calls', async (request, response) => {
+publicRoutes.get('/calls', requirePublicApiAuth, async (request, response) => {
   const limit = Math.max(1, Math.min(Number(request.query.limit ?? 8), 50))
   const calls = await listCallRecords()
 
@@ -67,7 +65,7 @@ publicRoutes.get('/calls', async (request, response) => {
   })
 })
 
-publicRoutes.delete('/calls', async (_request, response) => {
+publicRoutes.delete('/calls', requirePublicApiAuth, async (_request, response) => {
   await resetCallRecords()
   response.json({
     ok: true,
@@ -75,7 +73,11 @@ publicRoutes.delete('/calls', async (_request, response) => {
   })
 })
 
-publicRoutes.get('/dashboard/summary', async (_request, response) => {
+publicRoutes.get(
+  '/dashboard/summary',
+  requirePublicApiAuth,
+  async (_request, response) => {
   const [records, loads] = await Promise.all([listCallRecords(), getLoads()])
   response.json(buildDashboardSummary(records, loads))
-})
+  },
+)
