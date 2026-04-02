@@ -1,0 +1,11 @@
+docs/
+node_modules/
+apps/*/node_modules/
+apps/*/dist/
+data/runtime/
+apps/data/runtime/
+.env
+.env.*
+!*.example
+compose.env
+.DS_Store

@@ -1,0 +1,26 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - compose.env
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./data/runtime:/app/data/runtime
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
+        VITE_API_PUBLIC_KEY: ${VITE_API_PUBLIC_KEY:-}
+        VITE_HAPPYROBOT_DEPLOYMENT_URL: ${VITE_HAPPYROBOT_DEPLOYMENT_URL:-}
+    ports:
+      - '3000:8080'
+    depends_on:
+      - api
+    restart: unless-stopped

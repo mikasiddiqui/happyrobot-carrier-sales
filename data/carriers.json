@@ -1,0 +1,70 @@
+[
+  {
+    "mcNumber": "123456",
+    "carrierName": "Blue Sky Transport",
+    "status": "active",
+    "eligible": true,
+    "equipmentTypes": ["dry_van", "reefer"],
+    "insuranceOnFile": true,
+    "authorityActive": true,
+    "safetyRating": "satisfactory",
+    "notes": "Preferred regional carrier with clean insurance history."
+  },
+  {
+    "mcNumber": "234567",
+    "carrierName": "Northline Logistics",
+    "status": "active",
+    "eligible": true,
+    "equipmentTypes": ["flatbed"],
+    "insuranceOnFile": true,
+    "authorityActive": true,
+    "safetyRating": "satisfactory",
+    "notes": "Strong Southeast coverage for flatbed freight."
+  },
+  {
+    "mcNumber": "345678",
+    "carrierName": "Summit Reefers",
+    "status": "active",
+    "eligible": true,
+    "equipmentTypes": ["reefer"],
+    "insuranceOnFile": true,
+    "authorityActive": true,
+    "safetyRating": "conditional",
+    "notes": "Eligible, but keep negotiations tight due to premium reefer lanes."
+  },
+  {
+    "mcNumber": "456789",
+    "carrierName": "Prairie Van Lines",
+    "status": "inactive",
+    "eligible": false,
+    "equipmentTypes": ["dry_van"],
+    "insuranceOnFile": false,
+    "authorityActive": false,
+    "safetyRating": "not_rated",
+    "reasonIfIneligible": "Operating authority is inactive and insurance is not on file.",
+    "notes": "Use as the invalid-carrier demo path."
+  },
+  {
+    "mcNumber": "567890",
+    "carrierName": "Atlas Haul Co.",
+    "status": "active",
+    "eligible": true,
+    "equipmentTypes": ["dry_van", "flatbed"],
+    "insuranceOnFile": true,
+    "authorityActive": true,
+    "safetyRating": "satisfactory",
+    "notes": "Good fallback carrier for dry van and flatbed examples."
+  },
+  {
+    "mcNumber": "678901",
+    "carrierName": "Sunbelt Freight",
+    "status": "active",
+    "eligible": false,
+    "equipmentTypes": ["dry_van"],
+    "insuranceOnFile": true,
+    "authorityActive": true,
+    "safetyRating": "conditional",
+    "reasonIfIneligible": "Carrier is under review pending safety exception approval.",
+    "notes": "Useful for a non-bookable but technically active carrier case."
+  }
+]
