@@ -8,9 +8,10 @@ import {
   CardTitle,
 } from './components/ui/card'
 import { useDashboardData } from './hooks/use-dashboard-data'
+import { runtimeConfig } from './lib/runtime-config'
 
 function App() {
-  const hostedDeploymentUrl = import.meta.env.VITE_HAPPYROBOT_DEPLOYMENT_URL ?? ''
+  const hostedDeploymentUrl = runtimeConfig.happyRobotDeploymentUrl
 
   const { health, dashboard, dashboardError, dashboardLoading, clearSavedCalls } = useDashboardData()
 

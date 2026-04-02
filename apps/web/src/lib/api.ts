@@ -5,9 +5,10 @@ import type {
   LoadRecord,
   VoiceTokenResponse,
 } from '../types'
+import { runtimeConfig } from './runtime-config'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
-const apiPublicKey = import.meta.env.VITE_API_PUBLIC_KEY ?? ''
+const apiBaseUrl = runtimeConfig.apiBaseUrl
+const apiPublicKey = runtimeConfig.apiPublicKey
 
 function apiUrl(path: string): string {
   return apiBaseUrl ? `${apiBaseUrl}${path}` : path
