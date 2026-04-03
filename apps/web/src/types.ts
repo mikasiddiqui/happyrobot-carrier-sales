@@ -1,18 +1,16 @@
 export interface HealthResponse {
   ok: boolean
+  service: string
+  timestamp: string
   happyRobot: {
     configured: boolean
     env: string
-    apiKeyPresent: boolean
-    workflowIdPresent: boolean
   }
   seedData: {
     carrierCount: number
     loadCount: number
     savedCalls: number
   }
-  internalAuthEnabled: boolean
-  publicAuthEnabled: boolean
 }
 
 export interface VoiceTokenResponse {

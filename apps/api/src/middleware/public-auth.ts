@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 
 import { appConfig } from '../config'
+import { secureCompare } from '../lib/http'
 
 function unauthorized(response: Response): Response {
   return response.status(401).json({ error: 'Invalid public API key.' })
@@ -26,7 +27,7 @@ export function requirePublicApiAuth(
     return
   }
 
-  if (readPublicToken(request) !== appConfig.publicApiKey) {
+  if (!secureCompare(readPublicToken(request), appConfig.publicApiKey)) {
     unauthorized(response)
     return
   }

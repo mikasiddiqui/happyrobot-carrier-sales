@@ -1,14 +1,15 @@
 import { Router } from 'express'
 
-import { appConfig } from '../config'
 import {
   getCarriers,
   getLoads,
   listCallRecords,
   resetCallRecords,
 } from '../lib/data-store'
+import { parsePositiveInteger } from '../lib/request-validation'
 import { requirePublicApiAuth } from '../middleware/public-auth'
 import { buildDashboardSummary } from '../services/dashboard-summary'
+import { buildHealthResponse } from '../services/health-response'
 import { formatLane } from '../services/load-search'
 
 export const publicRoutes = Router()
@@ -20,26 +21,13 @@ publicRoutes.get('/health', requirePublicApiAuth, async (_request, response) => 
     listCallRecords(),
   ])
 
-  response.json({
-    ok: true,
-    service: 'happyrobot-carrier-sales-api',
-    timestamp: new Date().toISOString(),
-    happyRobot: {
-      configured: Boolean(
-        appConfig.happyRobotApiKey && appConfig.happyRobotWorkflowId,
-      ),
-      env: appConfig.happyRobotEnv,
-      apiKeyPresent: Boolean(appConfig.happyRobotApiKey),
-      workflowIdPresent: Boolean(appConfig.happyRobotWorkflowId),
-    },
-    seedData: {
+  response.json(
+    buildHealthResponse({
       carrierCount: carriers.length,
       loadCount: loads.length,
       savedCalls: calls.length,
-    },
-    internalAuthEnabled: Boolean(appConfig.internalApiKey),
-    publicAuthEnabled: Boolean(appConfig.publicApiKey),
-  })
+    }),
+  )
 })
 
 publicRoutes.get('/loads', requirePublicApiAuth, async (_request, response) => {
@@ -56,7 +44,7 @@ publicRoutes.get('/loads', requirePublicApiAuth, async (_request, response) => {
 })
 
 publicRoutes.get('/calls', requirePublicApiAuth, async (request, response) => {
-  const limit = Math.max(1, Math.min(Number(request.query.limit ?? 8), 50))
+  const limit = parsePositiveInteger(request.query.limit, 8, { min: 1, max: 50 })
   const calls = await listCallRecords()
 
   response.json({
@@ -77,7 +65,7 @@ publicRoutes.get(
   '/dashboard/summary',
   requirePublicApiAuth,
   async (_request, response) => {
-  const [records, loads] = await Promise.all([listCallRecords(), getLoads()])
-  response.json(buildDashboardSummary(records, loads))
+    const [records, loads] = await Promise.all([listCallRecords(), getLoads()])
+    response.json(buildDashboardSummary(records, loads))
   },
 )

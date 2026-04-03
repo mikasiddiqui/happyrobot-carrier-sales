@@ -14,6 +14,18 @@ function readOptionalString(value: unknown): string | undefined {
   return undefined
 }
 
+function readOptionalFiniteNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function readOptionalNonNegativeInteger(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return undefined
+  }
+
+  return Math.max(0, Math.trunc(value))
+}
+
 export function normalizeIncomingCallPayload(
   input: CreateCallRecordRequest & Record<string, unknown>,
 ): CreateCallRecordRequest {
@@ -38,31 +50,19 @@ export function normalizeIncomingCallPayload(
       readOptionalString(input.load_id),
     equipmentType: asEquipmentType(input.equipmentType ?? input.equipment_type),
     loadboardRate:
-      typeof input.loadboardRate === 'number'
-        ? input.loadboardRate
-        : typeof input.loadboard_rate === 'number'
-          ? input.loadboard_rate
-          : undefined,
+      readOptionalFiniteNumber(input.loadboardRate) ??
+      readOptionalFiniteNumber(input.loadboard_rate),
     carrierInitialOffer:
-      typeof input.carrierInitialOffer === 'number'
-        ? input.carrierInitialOffer
-        : typeof input.carrier_initial_offer === 'number'
-          ? input.carrier_initial_offer
-          : undefined,
+      readOptionalFiniteNumber(input.carrierInitialOffer) ??
+      readOptionalFiniteNumber(input.carrier_initial_offer),
     finalAgreedRate:
-      typeof input.finalAgreedRate === 'number'
-        ? input.finalAgreedRate
-        : typeof input.final_agreed_rate === 'number'
-          ? input.final_agreed_rate
-          : undefined,
+      readOptionalFiniteNumber(input.finalAgreedRate) ??
+      readOptionalFiniteNumber(input.final_agreed_rate),
     negotiationRounds:
-      typeof input.negotiationRounds === 'number'
-        ? input.negotiationRounds
-        : typeof input.negotiation_rounds === 'number'
-          ? input.negotiation_rounds
-          : undefined,
-    outcome: typeof input.outcome === 'string' ? input.outcome : undefined,
-    sentiment: typeof input.sentiment === 'string' ? input.sentiment : undefined,
+      readOptionalNonNegativeInteger(input.negotiationRounds) ??
+      readOptionalNonNegativeInteger(input.negotiation_rounds),
+    outcome: readOptionalString(input.outcome),
+    sentiment: readOptionalString(input.sentiment),
     summary:
       readOptionalString(input.summary) ??
       readOptionalString(input.call_summary),

@@ -3,6 +3,7 @@ import express from 'express'
 import helmet from 'helmet'
 
 import { appConfig } from './config'
+import { httpError } from './lib/http'
 import { errorHandler } from './middleware/error-handler'
 import { publicRoutes } from './routes/public-routes'
 import { voiceRoutes } from './routes/voice-routes'
@@ -11,6 +12,8 @@ import { workflowRoutes } from './routes/workflow-routes'
 export function createApp() {
   const app = express()
   const allowedOrigins = appConfig.corsAllowedOrigins
+
+  app.disable('x-powered-by')
 
   app.use(
     helmet({
@@ -25,12 +28,12 @@ export function createApp() {
           return
         }
 
-        callback(new Error(`Origin ${origin} is not allowed by CORS.`))
+        callback(httpError(403, 'Origin is not allowed.'))
       },
       credentials: false,
     }),
   )
-  app.use(express.json())
+  app.use(express.json({ limit: '1mb' }))
 
   app.use('/api', publicRoutes)
   app.use('/api', voiceRoutes)

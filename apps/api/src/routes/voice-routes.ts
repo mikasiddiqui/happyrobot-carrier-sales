@@ -6,7 +6,10 @@ import {
   isHappyRobotConfigured,
   resolveHappyRobotWorkflowId,
 } from '../config'
-import { isRecord } from '../lib/http'
+import {
+  ensureRecordBody,
+  readOptionalTrimmedString,
+} from '../lib/request-validation'
 import { requirePublicApiAuth } from '../middleware/public-auth'
 
 export const voiceRoutes = Router()
@@ -20,10 +23,10 @@ voiceRoutes.post('/voice/token', requirePublicApiAuth, async (request, response)
     return
   }
 
-  const body = isRecord(request.body) ? request.body : {}
-  const callerName = typeof body.callerName === 'string' ? body.callerName.trim() : ''
-  const brokerName = typeof body.brokerName === 'string' ? body.brokerName.trim() : ''
-  const scenario = typeof body.scenario === 'string' ? body.scenario.trim() : ''
+  const body = ensureRecordBody(request.body)
+  const callerName = readOptionalTrimmedString(body, 'callerName') ?? ''
+  const brokerName = readOptionalTrimmedString(body, 'brokerName') ?? ''
+  const scenario = readOptionalTrimmedString(body, 'scenario') ?? ''
 
   try {
     const workflowId = await resolveHappyRobotWorkflowId()

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import {
   fetchDashboardSummary,
@@ -20,25 +20,50 @@ export function useDashboardData() {
   const [dashboard, setDashboard] = useState<DashboardPayload>(emptyDashboard)
   const [dashboardError, setDashboardError] = useState('')
   const [dashboardLoading, setDashboardLoading] = useState(true)
+  const refreshInFlight = useRef<Promise<void> | null>(null)
 
   async function refreshDashboard() {
-    try {
-      const [nextHealth, summary, calls, loads] = await Promise.all([
-        fetchHealth(),
-        fetchDashboardSummary(),
-        fetchRecentCalls(),
-        fetchLoads(),
-      ])
+    if (refreshInFlight.current) {
+      await refreshInFlight.current
+      return
+    }
 
-      setHealth(nextHealth)
-      setDashboard({
-        summary,
-        calls,
-        loads,
-      })
-      setDashboardError('')
+    const pendingRefresh = (async () => {
+      try {
+        const [summary, calls, loads] = await Promise.all([
+          fetchDashboardSummary(),
+          fetchRecentCalls(),
+          fetchLoads(),
+        ])
+
+        setDashboard({
+          summary,
+          calls,
+          loads,
+        })
+        setDashboardError('')
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Dashboard load failed.'
+        setDashboardError(message)
+      }
+    })()
+
+    refreshInFlight.current = pendingRefresh
+
+    try {
+      await pendingRefresh
+    } finally {
+      if (refreshInFlight.current === pendingRefresh) {
+        refreshInFlight.current = null
+      }
+    }
+  }
+
+  async function refreshHealth() {
+    try {
+      setHealth(await fetchHealth())
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Dashboard load failed.'
+      const message = error instanceof Error ? error.message : 'Health check failed.'
       setDashboardError(message)
     }
   }
@@ -50,7 +75,8 @@ export function useDashboardData() {
     try {
       await resetSavedCalls()
       setDashboard(emptyDashboard)
-      await refreshDashboard()
+      await Promise.all([refreshHealth(), refreshDashboard()])
+      setDashboardLoading(false)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Could not reset saved calls.'
       setDashboardError(message)
@@ -61,7 +87,7 @@ export function useDashboardData() {
   useEffect(() => {
     async function loadInitialDashboard() {
       setDashboardLoading(true)
-      await refreshDashboard()
+      await Promise.all([refreshHealth(), refreshDashboard()])
       setDashboardLoading(false)
     }
 
@@ -75,7 +101,7 @@ export function useDashboardData() {
 
     function handleVisibilityChange() {
       if (document.visibilityState === 'visible') {
-        void refreshDashboard()
+        void Promise.all([refreshHealth(), refreshDashboard()])
       }
     }
 

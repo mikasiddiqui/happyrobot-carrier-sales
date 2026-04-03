@@ -13,10 +13,31 @@ const loadsFilePath = resolve(dataDirectory, 'loads.json')
 
 let carriersCache: CarrierRecord[] | null = null
 let loadsCache: LoadRecord[] | null = null
+let callStoreMutation: Promise<void> = Promise.resolve()
 
 async function readJsonFile<T>(filePath: string): Promise<T> {
   const contents = await fs.readFile(filePath, 'utf8')
   return JSON.parse(contents) as T
+}
+
+async function writeJsonFileAtomic(
+  filePath: string,
+  payload: unknown,
+): Promise<void> {
+  const tempFilePath = `${filePath}.tmp`
+  await fs.writeFile(tempFilePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8')
+  await fs.rename(tempFilePath, filePath)
+}
+
+function queueCallStoreMutation<T>(operation: () => Promise<T>): Promise<T> {
+  const queuedOperation = callStoreMutation.then(operation, operation)
+
+  callStoreMutation = queuedOperation.then(
+    () => undefined,
+    () => undefined,
+  )
+
+  return queuedOperation
 }
 
 export async function ensureRuntimeStore(): Promise<void> {
@@ -55,42 +76,46 @@ export async function listCallRecords(): Promise<StoredCallRecord[]> {
 }
 
 export async function resetCallRecords(): Promise<void> {
-  await ensureRuntimeStore()
-  await fs.writeFile(callsFilePath, '[]\n', 'utf8')
+  await queueCallStoreMutation(async () => {
+    await ensureRuntimeStore()
+    await writeJsonFileAtomic(callsFilePath, [])
+  })
 }
 
 export async function appendCallRecord(
   payload: CreateCallRecordRequest,
 ): Promise<StoredCallRecord> {
-  await ensureRuntimeStore()
+  return queueCallStoreMutation(async () => {
+    await ensureRuntimeStore()
 
-  const now = new Date().toISOString()
-  const records = await listCallRecords()
+    const now = new Date().toISOString()
+    const records = await listCallRecords()
 
-  const record: StoredCallRecord = {
-    id: randomUUID(),
-    createdAt: now,
-    updatedAt: now,
-    runId: payload.runId,
-    carrierMcNumber: payload.carrierMcNumber,
-    carrierName: payload.carrierName,
-    carrierEligible: payload.carrierEligible,
-    loadId: payload.loadId,
-    equipmentType: payload.equipmentType,
-    loadboardRate: payload.loadboardRate,
-    carrierInitialOffer: payload.carrierInitialOffer,
-    finalAgreedRate: payload.finalAgreedRate,
-    negotiationRounds: payload.negotiationRounds ?? 0,
-    outcome: payload.outcome ?? 'unknown',
-    sentiment: payload.sentiment ?? 'neutral',
-    summary: payload.summary,
-    accepted: payload.accepted,
-    rejectionReason: payload.rejectionReason,
-    needsHumanFollowup: payload.needsHumanFollowup ?? false,
-  }
+    const record: StoredCallRecord = {
+      id: randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+      runId: payload.runId,
+      carrierMcNumber: payload.carrierMcNumber,
+      carrierName: payload.carrierName,
+      carrierEligible: payload.carrierEligible,
+      loadId: payload.loadId,
+      equipmentType: payload.equipmentType,
+      loadboardRate: payload.loadboardRate,
+      carrierInitialOffer: payload.carrierInitialOffer,
+      finalAgreedRate: payload.finalAgreedRate,
+      negotiationRounds: payload.negotiationRounds ?? 0,
+      outcome: payload.outcome ?? 'unknown',
+      sentiment: payload.sentiment ?? 'neutral',
+      summary: payload.summary,
+      accepted: payload.accepted,
+      rejectionReason: payload.rejectionReason,
+      needsHumanFollowup: payload.needsHumanFollowup ?? false,
+    }
 
-  const nextRecords = [record, ...records]
-  await fs.writeFile(callsFilePath, `${JSON.stringify(nextRecords, null, 2)}\n`, 'utf8')
+    const nextRecords = [record, ...records]
+    await writeJsonFileAtomic(callsFilePath, nextRecords)
 
-  return record
+    return record
+  })
 }
